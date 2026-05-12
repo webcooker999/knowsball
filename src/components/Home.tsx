@@ -168,12 +168,22 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
           </div>
 
           {/* Mode 3 */}
-          <div onClick={() => onStart('intlGoals')} className="group relative border-2 border-zinc-800 bg-zinc-900 p-4 hover:border-brand-green transition-colors cursor-pointer overflow-hidden flex flex-col h-40 justify-end md:col-span-2">
+          <div onClick={() => onStart('intlGoals')} className="group relative border-2 border-zinc-800 bg-zinc-900 p-4 hover:border-brand-green transition-colors cursor-pointer overflow-hidden flex flex-col h-40 justify-end">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center grayscale opacity-10 group-hover:opacity-30 group-hover:scale-105 transition-all duration-500"></div>
             <div className="absolute top-4 right-4 bg-brand-green w-2 h-2 rounded-full animate-pulse"></div>
             <div className="relative z-10">
               <span className="text-[10px] font-black uppercase text-brand-green tracking-widest block mb-1">New // Vol. 3</span>
               <h4 className="font-anton text-2xl uppercase leading-none text-brand-white transition-colors">INTL GOALS <span className="text-sm">(ALL-TIME)</span></h4>
+            </div>
+          </div>
+
+          {/* Mode 4 */}
+          <div onClick={() => onStart('age')} className="group relative border-2 border-zinc-800 bg-zinc-900 p-4 hover:border-brand-green transition-colors cursor-pointer overflow-hidden flex flex-col h-40 justify-end">
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511886929837-399a8a11bdca?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center grayscale opacity-10 group-hover:opacity-30 group-hover:scale-105 transition-all duration-500"></div>
+            <div className="absolute top-4 right-4 bg-brand-green w-2 h-2 rounded-full animate-pulse"></div>
+            <div className="relative z-10">
+              <span className="text-[10px] font-black uppercase text-brand-green tracking-widest block mb-1">New // Vol. 4</span>
+              <h4 className="font-anton text-2xl uppercase leading-none text-brand-white transition-colors">AGE GUESS <span className="text-sm">(LEGENDS)</span></h4>
             </div>
           </div>
         </div>
