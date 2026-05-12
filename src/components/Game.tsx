@@ -22,6 +22,47 @@ export default function Game({ gameMode, onEnd }: GameProps) {
   const [round, setRound] = useState(1);
   const [timerKey, setTimerKey] = useState(0);
   const usedIds = useRef<string[]>([]);
+  const tickingAudio = useRef<HTMLAudioElement | null>(null);
+  const correctAudio = useRef<HTMLAudioElement | null>(null);
+  const incorrectAudio = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    tickingAudio.current = new Audio('/assets/dragon-studio-clock-ticking-sfx-467486.mp3');
+    tickingAudio.current.loop = true;
+    tickingAudio.current.volume = 0.3;
+
+    correctAudio.current = new Audio('/assets/dragon-studio-correct-472358.mp3');
+    correctAudio.current.volume = 0.4;
+
+    incorrectAudio.current = new Audio('/assets/error sound.mp3');
+    incorrectAudio.current.volume = 0.4;
+
+    return () => {
+      [tickingAudio, correctAudio, incorrectAudio].forEach(ref => {
+        if (ref.current) {
+          ref.current.pause();
+          ref.current = null;
+        }
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (status === 'playing' && tickingAudio.current) {
+      tickingAudio.current.currentTime = 0;
+      tickingAudio.current.play().catch(e => console.log("Audio play blocked:", e));
+    } else if (tickingAudio.current) {
+      tickingAudio.current.pause();
+
+      if (status === 'correct' && correctAudio.current) {
+        correctAudio.current.currentTime = 0;
+        correctAudio.current.play().catch(e => console.log("Audio play blocked:", e));
+      } else if (status === 'incorrect' && incorrectAudio.current) {
+        incorrectAudio.current.currentTime = 0;
+        incorrectAudio.current.play().catch(e => console.log("Audio play blocked:", e));
+      }
+    }
+  }, [status, timerKey]);
 
   useEffect(() => {
     loadNewRound();
@@ -62,7 +103,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
     } else if (gameMode === 'market') {
       p1 = getRandomMarketValuePlayer(usedIds.current);
       if (!usedIds.current.includes(p1.id)) usedIds.current.push(p1.id);
-      
+
       p2 = getRandomMarketValuePlayer(usedIds.current, p1.value, streak);
       let attempts = 0;
       while (p1.value === p2.value && attempts < 10) {
@@ -72,7 +113,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
     } else if (gameMode === 'intlGoals') {
       p1 = getRandomIntlGoalsPlayer(usedIds.current);
       if (!usedIds.current.includes(p1.id)) usedIds.current.push(p1.id);
-      
+
       p2 = getRandomIntlGoalsPlayer(usedIds.current, p1.value, streak);
       let attempts = 0;
       while (p1.value === p2.value && attempts < 10) {
@@ -82,7 +123,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
     } else {
       p1 = getRandomAgePlayer(usedIds.current);
       if (!usedIds.current.includes(p1.id)) usedIds.current.push(p1.id);
-      
+
       p2 = getRandomAgePlayer(usedIds.current, p1.value, streak);
       let attempts = 0;
       while (p1.value === p2.value && attempts < 10) {
@@ -92,12 +133,12 @@ export default function Game({ gameMode, onEnd }: GameProps) {
     }
 
     if (!usedIds.current.includes(p2.id)) usedIds.current.push(p2.id);
-    
+
     setPlayerLeft(p1);
     setPlayerRight(p2);
     setRound(r => r + 1);
     setTimerKey(t => t + 1);
-    
+
     setStatus('playing');
     setRevealed(false);
     setSelectedSide(null);
@@ -110,16 +151,16 @@ export default function Game({ gameMode, onEnd }: GameProps) {
     setRevealed(true);
     const leftWins = playerLeft.value > playerRight.value;
     const rightWins = playerRight.value > playerLeft.value;
-    const isCorrect = 
-      (guessSide === 'left' && leftWins) || 
-      (guessSide === 'right' && rightWins) || 
+    const isCorrect =
+      (guessSide === 'left' && leftWins) ||
+      (guessSide === 'right' && rightWins) ||
       (playerLeft.value === playerRight.value); // Tie counts as correct
 
     if (isCorrect) {
       setStatus('correct');
       const newStreak = streak + 1;
       setStreak(newStreak);
-      
+
       setTimeout(() => {
         loadNewRound();
       }, 1500);
@@ -143,18 +184,18 @@ export default function Game({ gameMode, onEnd }: GameProps) {
       {/* Background effect based on status */}
       <AnimatePresence>
         {status === 'correct' && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="absolute inset-0 bg-brand-green/20 z-30 pointer-events-none"
           />
         )}
         {status === 'incorrect' && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="absolute inset-0 bg-brand-red/40 z-30 pointer-events-none"
           />
         )}
@@ -172,10 +213,10 @@ export default function Game({ gameMode, onEnd }: GameProps) {
           <div className="text-right leading-none">
             <span className="block text-[10px] uppercase font-bold opacity-60">Current Streak</span>
             <span className="font-anton text-3xl flex items-center gap-1 text-brand-green">
-              {streak} 
-              <motion.span 
-                animate={status === 'correct' ? { 
-                  y: [0, -12, 4, -6, 0], 
+              {streak}
+              <motion.span
+                animate={status === 'correct' ? {
+                  y: [0, -12, 4, -6, 0],
                   scale: [1, 1.4, 1],
                   filter: [
                     'drop-shadow(0px 0px 5px rgba(255, 165, 0, 0.5))',
@@ -192,8 +233,8 @@ export default function Game({ gameMode, onEnd }: GameProps) {
                   filter: 'drop-shadow(0px 0px 0px rgba(0,0,0,0))',
                   scale: 1
                 }}
-                transition={status === 'correct' 
-                  ? { duration: 0.8, ease: "easeOut" } 
+                transition={status === 'correct'
+                  ? { duration: 0.8, ease: "easeOut" }
                   : { duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 className="text-xl inline-block"
               >
@@ -210,14 +251,14 @@ export default function Game({ gameMode, onEnd }: GameProps) {
       {/* TIMER BAR */}
       <div className="w-full h-1.5 bg-zinc-900 z-40 relative">
         {status === 'playing' && (
-           <motion.div 
-              key={timerKey}
-              initial={{ width: '100%' }}
-              animate={{ width: '0%' }}
-              transition={{ duration: 7, ease: "linear" }}
-              onAnimationComplete={handleTimeOut}
-              className="h-full bg-brand-green"
-           />
+          <motion.div
+            key={timerKey}
+            initial={{ width: '100%' }}
+            animate={{ width: '0%' }}
+            transition={{ duration: 7, ease: "linear" }}
+            onAnimationComplete={handleTimeOut}
+            className="h-full bg-brand-green"
+          />
         )}
       </div>
 
@@ -262,7 +303,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
           </div>
           <svg className="absolute top-20 right-10 w-24 h-24 opacity-40 text-white pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M10,90 Q50,10 90,90" strokeDasharray="4 4" />
-            <circle cx="90" cy="90" r="5" fill="currentColor"/>
+            <circle cx="90" cy="90" r="5" fill="currentColor" />
           </svg>
         </div>
 
@@ -319,7 +360,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
 
       {/* BOTTOM BUTTONS */}
       <footer className="h-24 md:h-28 flex w-full border-t-4 border-brand-white z-40 bg-brand-black relative mt-auto shrink-0">
-        <button 
+        <button
           disabled={status !== 'playing'}
           onClick={() => handleGuess('left')}
           className="w-1/2 bg-zinc-900 border-r-2 border-brand-white flex items-center justify-center cursor-pointer hover:bg-brand-green hover:text-black focus:bg-brand-green transition-colors group disabled:opacity-50 disabled:hover:bg-zinc-900 disabled:hover:text-white px-2"
@@ -329,7 +370,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
             <span className="text-[9px] md:text-[10px] font-black uppercase opacity-60 mt-1 block">Tap Left</span>
           </div>
         </button>
-        <button 
+        <button
           disabled={status !== 'playing'}
           onClick={() => handleGuess('right')}
           className="w-1/2 bg-zinc-900 flex items-center justify-center cursor-pointer hover:bg-brand-green hover:text-black focus:bg-brand-green transition-colors group disabled:opacity-50 disabled:hover:bg-zinc-900 disabled:hover:text-white px-2"
@@ -340,7 +381,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
           </div>
         </button>
       </footer>
-      
+
 
     </div>
   );

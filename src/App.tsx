@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
 import Home from './components/Home';
 import Game from './components/Game';
@@ -9,6 +9,34 @@ export type GameModeType = 'goals' | 'market' | 'intlGoals' | 'age';
 export type Screen = 'home' | 'game' | 'result' | 'leaderboard';
 
 export default function App() {
+  const bgMusic = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    bgMusic.current = new Audio('/assets/bg music 5mins.mp3');
+    bgMusic.current.loop = true;
+    bgMusic.current.volume = 0.3;
+    
+    // Play on first interaction to bypass browser autoplay restrictions
+    const playMusic = () => {
+      if (bgMusic.current) {
+        bgMusic.current.play().catch(e => console.log("Autoplay blocked:", e));
+        window.removeEventListener('click', playMusic);
+        window.removeEventListener('touchstart', playMusic);
+      }
+    };
+
+    window.addEventListener('click', playMusic);
+    window.addEventListener('touchstart', playMusic);
+
+    return () => {
+      if (bgMusic.current) {
+        bgMusic.current.pause();
+        bgMusic.current = null;
+      }
+      window.removeEventListener('click', playMusic);
+      window.removeEventListener('touchstart', playMusic);
+    };
+  }, []);
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [gameMode, setGameMode] = useState<GameModeType>('goals');
   const [score, setScore] = useState(0);
