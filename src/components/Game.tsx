@@ -208,20 +208,18 @@ export default function Game({ gameMode, onEnd }: GameProps) {
       </header>
 
       {/* TIMER BAR */}
-      {gameMode === 'goals' && (
-        <div className="w-full h-1.5 bg-zinc-900 z-40 relative">
-          {status === 'playing' && (
-             <motion.div 
-                key={timerKey}
-                initial={{ width: '100%' }}
-                animate={{ width: '0%' }}
-                transition={{ duration: 7, ease: "linear" }}
-                onAnimationComplete={handleTimeOut}
-                className="h-full bg-brand-green"
-             />
-          )}
-        </div>
-      )}
+      <div className="w-full h-1.5 bg-zinc-900 z-40 relative">
+        {status === 'playing' && (
+           <motion.div 
+              key={timerKey}
+              initial={{ width: '100%' }}
+              animate={{ width: '0%' }}
+              transition={{ duration: 7, ease: "linear" }}
+              onAnimationComplete={handleTimeOut}
+              className="h-full bg-brand-green"
+           />
+        )}
+      </div>
 
       {/* CENTER MATCHUP */}
       <main className="flex-1 flex flex-row relative z-10 w-full">
