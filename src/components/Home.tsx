@@ -60,25 +60,25 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
     >
       {/* MAG HEADER */}
       <header className="flex justify-center items-center p-4 md:p-6 border-b-4 border-brand-white bg-zinc-900 border-t-4 md:border-t-0 mt-0 w-full">
-        <img 
-          src="/assets/knowsball.png" 
-          alt="Knows Ball" 
-          className="h-12 md:h-16 object-contain brightness-0 invert" 
+        <img
+          src="/assets/knowsball.png"
+          alt="Knows Ball"
+          className="h-12 md:h-16 object-contain brightness-0 invert"
         />
       </header>
 
       {/* MAG COVER HERO */}
       <section className="relative w-full border-b-4 border-brand-white overflow-hidden">
         <div className="absolute inset-0 bg-zinc-900"></div>
-        <div 
+        <div
           className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-[80%] h-[150%] bg-[url('/assets/trophy.png')] bg-contain bg-right bg-no-repeat opacity-40 mix-blend-screen"
         ></div>
         <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent"></div>
-        
+
         <div className="relative p-6 pt-12 pb-12 md:pt-16 md:pb-14 flex flex-col items-center text-center z-10 w-full">
           <div className="w-full relative min-h-[220px] sm:min-h-[240px] md:min-h-[280px] lg:min-h-[340px] flex items-center justify-center -mt-4 mb-4">
             <AnimatePresence mode="wait">
-              <motion.div 
+              <motion.div
                 key={currentSlide}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -87,8 +87,8 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
                 className="w-full absolute"
               >
                 <h2 className="font-anton text-5xl md:text-7xl lg:text-[7rem] uppercase leading-[0.85] tracking-tighter text-brand-white">
-                  {slide.title1} <br/>
-                  <span className="text-brand-green italic text-4xl md:text-6xl lg:text-[6rem] relative z-10">{slide.titleAccent}</span><br/>
+                  {slide.title1} <br />
+                  <span className="text-brand-green italic text-4xl md:text-6xl lg:text-[6rem] relative z-10">{slide.titleAccent}</span><br />
                   {slide.title2}
                 </h2>
                 <div className="mt-4 flex items-center justify-center gap-4">
@@ -108,9 +108,8 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    idx === currentSlide ? 'w-6 bg-brand-green' : 'w-2 bg-brand-white/30 hover:bg-brand-white/50'
-                  }`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-6 bg-brand-green' : 'w-2 bg-brand-white/30 hover:bg-brand-white/50'
+                    }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
@@ -124,7 +123,7 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
               <Play fill="currentColor" size={28} />
               PLAY NOW
             </motion.button>
-            
+
             <motion.button
               onClick={onLeaderboard}
               whileHover={{ scale: 1.02 }}
@@ -157,7 +156,7 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
               <h4 className="font-anton text-3xl uppercase leading-none text-brand-white">WC GOALS</h4>
             </div>
           </div>
-          
+
           {/* Mode 2 */}
           <div onClick={() => onStart('market')} className="group relative border-2 border-zinc-800 bg-zinc-900 p-4 hover:border-brand-green transition-colors cursor-pointer overflow-hidden flex flex-col h-40 justify-end">
             <div className="absolute inset-0 bg-[url('/assets/whos_higher_value.jpeg')] bg-cover bg-center grayscale opacity-10 group-hover:opacity-30 group-hover:scale-105 transition-all duration-500"></div>
@@ -179,10 +178,10 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
           </div>
         </div>
       </section>
-      
+
       {/* Footer text */}
       <div className="p-6 text-center border-t border-zinc-800 text-zinc-600 text-xs font-mono uppercase">
-        © 2026 Football Culture Arcade. <br className="md:hidden" /> ALL RIGHTS RESERVED.
+        © 2026 KnowsBall by Studio147 <br className="md:hidden" /> ALL RIGHTS RESERVED.
       </div>
     </motion.div>
   );
