@@ -6,7 +6,7 @@
   --font-inter: "Inter", sans-serif;
   --font-marker: "Permanent Marker", cursive;
   --font-playfair: "Playfair Display", serif;
-  
+
   --color-brand-black: #0f0f0f;
   --color-brand-white: #f4f1ea;
   --color-brand-green: #ccff00;
@@ -50,12 +50,15 @@ html {
 .text-stroke {
   -webkit-text-stroke: 1px var(--color-brand-black);
 }
+
 .text-stroke-white {
   -webkit-text-stroke: 1px var(--color-brand-white);
 }
+
 .text-stroke-none {
   -webkit-text-stroke: 0;
 }
+
 .text-shadow-heavy {
   text-shadow: 4px 4px 0px var(--color-brand-black), -2px -2px 0px var(--color-brand-black), 2px -2px 0px var(--color-brand-black), -2px 2px 0px var(--color-brand-black), 2px 2px 0px var(--color-brand-black);
 }

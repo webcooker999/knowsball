@@ -6,6 +6,7 @@ import { intlGoalsPlayers, getRandomIntlGoalsPlayer } from '../data/intlGoals';
 import { agePlayers, getRandomAgePlayer } from '../data/agePlayers';
 import { Flame, X } from 'lucide-react';
 import { GameModeType } from '../App';
+import { tickingAudio, correctAudio, incorrectAudio } from '../audio';
 
 interface GameProps {
   gameMode: GameModeType;
@@ -22,44 +23,28 @@ export default function Game({ gameMode, onEnd }: GameProps) {
   const [round, setRound] = useState(1);
   const [timerKey, setTimerKey] = useState(0);
   const usedIds = useRef<string[]>([]);
-  const tickingAudio = useRef<HTMLAudioElement | null>(null);
-  const correctAudio = useRef<HTMLAudioElement | null>(null);
-  const incorrectAudio = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    tickingAudio.current = new Audio('/assets/dragon-studio-clock-ticking-sfx-467486.mp3');
-    tickingAudio.current.loop = true;
-    tickingAudio.current.volume = 0.3;
-
-    correctAudio.current = new Audio('/assets/dragon-studio-correct-472358.mp3');
-    correctAudio.current.volume = 0.4;
-
-    incorrectAudio.current = new Audio('/assets/error sound.mp3');
-    incorrectAudio.current.volume = 0.4;
-
     return () => {
-      [tickingAudio, correctAudio, incorrectAudio].forEach(ref => {
-        if (ref.current) {
-          ref.current.pause();
-          ref.current = null;
-        }
-      });
+      tickingAudio.pause();
+      correctAudio.pause();
+      incorrectAudio.pause();
     };
   }, []);
 
   useEffect(() => {
-    if (status === 'playing' && tickingAudio.current) {
-      tickingAudio.current.currentTime = 0;
-      tickingAudio.current.play().catch(e => console.log("Audio play blocked:", e));
-    } else if (tickingAudio.current) {
-      tickingAudio.current.pause();
+    if (status === 'playing') {
+      tickingAudio.currentTime = 0;
+      tickingAudio.play().catch(e => console.log("Audio play blocked:", e));
+    } else {
+      tickingAudio.pause();
 
-      if (status === 'correct' && correctAudio.current) {
-        correctAudio.current.currentTime = 0;
-        correctAudio.current.play().catch(e => console.log("Audio play blocked:", e));
-      } else if (status === 'incorrect' && incorrectAudio.current) {
-        incorrectAudio.current.currentTime = 0;
-        incorrectAudio.current.play().catch(e => console.log("Audio play blocked:", e));
+      if (status === 'correct') {
+        correctAudio.currentTime = 0;
+        correctAudio.play().catch(e => console.log("Audio play blocked:", e));
+      } else if (status === 'incorrect') {
+        incorrectAudio.currentTime = 0;
+        incorrectAudio.play().catch(e => console.log("Audio play blocked:", e));
       }
     }
   }, [status, timerKey]);
@@ -174,7 +159,7 @@ export default function Game({ gameMode, onEnd }: GameProps) {
 
   if (!playerLeft || !playerRight) return null;
 
-  const title = gameMode === 'goals' ? 'WHO SCORED MORE WORLD CUP GOALS?' : gameMode === 'market' ? 'WHO HAD THE HIGHER PEAK VALUE?' : gameMode === 'age' ? 'WHO IS OLDER?' : 'WHO SCORED MORE INTERNATIONAL GOALS?';
+  const title = gameMode === 'goals' ? 'WHO SCORED MORE WORLD CUP GOALS?' : gameMode === 'market' ? 'WHO HAD THE HIGHER PEAK VALUE?' : gameMode === 'age' ? 'WHO IS OLDER? (MAY/2026)' : 'WHO SCORED MORE INTERNATIONAL GOALS?';
   const headerSubtitle = gameMode === 'goals' ? 'World Cup 2026' : gameMode === 'market' ? 'Transfer Market' : gameMode === 'age' ? 'Age Guess' : 'All-Time Legends';
   const prefix = gameMode === 'market' ? '€' : '';
   const suffix = gameMode === 'market' ? 'M' : gameMode === 'age' ? ' years' : '';

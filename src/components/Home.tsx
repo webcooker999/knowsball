@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Trophy, ChevronRight, BarChart2 } from 'lucide-react';
+import { Play, Trophy, ChevronRight, BarChart2, Volume2, VolumeX } from 'lucide-react';
 import { GameModeType } from '../App';
+import { bgMusic } from '../audio';
 
 interface HomeProps {
   onStart: (mode: GameModeType) => void;
@@ -13,34 +14,39 @@ const slides = [
     mode: 'goals' as GameModeType,
     title1: 'WHO SCORED',
     titleAccent: 'MORE',
-    title2: 'GOALS?',
-    subtitle: 'World Cup Edition'
+    title2: 'WORLD CUP GOALS?',
+    subtitle: 'THE ULTIMATE HERITAGE CHECK',
+    bg: 'bg-zinc-900'
   },
   {
     mode: 'intlGoals' as GameModeType,
-    title1: 'INTERNATIONAL',
-    titleAccent: 'CAREER',
+    title1: 'WHO HAS MORE',
+    titleAccent: 'INTERNATIONAL',
     title2: 'GOALS?',
-    subtitle: 'All-Time Legends'
+    subtitle: 'COMPARE THE GREATEST OF ALL TIME',
+    bg: 'bg-zinc-900'
   },
   {
     mode: 'market' as GameModeType,
-    title1: 'WHO HAD A',
-    titleAccent: 'HIGHER',
-    title2: 'PEAK VALUE?',
-    subtitle: 'Transfer Market'
+    title1: 'WHO HAS HIGHER',
+    titleAccent: 'MARKET',
+    title2: 'VALUE?',
+    subtitle: 'BALLKNOWLEDGE ECONOMICS 101',
+    bg: 'bg-zinc-900'
   },
   {
     mode: 'age' as GameModeType,
     title1: 'WHO IS',
-    titleAccent: 'OLDER?',
-    title2: 'AGE GUESS',
-    subtitle: 'Current & Legends'
+    titleAccent: 'OLDER',
+    title2: 'IN AGE?',
+    subtitle: 'GUESS THE VETERANS & WUNDERKINDERS',
+    bg: 'bg-zinc-900'
   }
 ];
 
 export default function Home({ onStart, onLeaderboard }: HomeProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMuted, setIsMuted] = useState(() => bgMusic.muted);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -48,6 +54,14 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newMuted = !bgMusic.muted;
+    bgMusic.muted = newMuted;
+    localStorage.setItem('knowsball_music_muted', newMuted.toString());
+    setIsMuted(newMuted);
+  };
 
   const slide = slides[currentSlide];
 
@@ -59,12 +73,19 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
       className="absolute inset-0 z-20 overflow-y-auto overflow-x-hidden bg-zinc-950 hide-scrollbar"
     >
       {/* MAG HEADER */}
-      <header className="flex justify-center items-center p-4 md:p-6 border-b-4 border-brand-white bg-zinc-900 border-t-4 md:border-t-0 mt-0 w-full">
+      <header className="relative flex justify-center items-center p-4 md:p-6 border-b-4 border-brand-white bg-zinc-900 border-t-4 md:border-t-0 mt-0 w-full">
         <img
           src="/assets/knowsball.png"
           alt="Knows Ball"
           className="h-12 md:h-16 object-contain brightness-0 invert"
         />
+        <button
+          onClick={toggleMute}
+          className="absolute right-4 md:right-6 p-2 rounded-full border-2 border-brand-white bg-zinc-950 text-brand-white hover:bg-brand-white hover:text-zinc-950 transition-all cursor-pointer flex items-center justify-center shadow-[4px_4px_0px_0px_#f4f1ea] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#f4f1ea]"
+          aria-label="Toggle Music"
+        >
+          {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
       </header>
 
       {/* MAG COVER HERO */}

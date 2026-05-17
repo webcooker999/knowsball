@@ -1,40 +1,30 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'motion/react';
 import Home from './components/Home';
 import Game from './components/Game';
 import Result from './components/Result';
 import Leaderboard from './components/Leaderboard';
+import { unlockAndPlayAudio } from './audio';
 
 export type GameModeType = 'goals' | 'market' | 'intlGoals' | 'age';
 export type Screen = 'home' | 'game' | 'result' | 'leaderboard';
 
 export default function App() {
-  const bgMusic = useRef<HTMLAudioElement | null>(null);
-
   useEffect(() => {
-    bgMusic.current = new Audio('/assets/bg music 5mins.mp3');
-    bgMusic.current.loop = true;
-    bgMusic.current.volume = 0.3;
-    
-    // Play on first interaction to bypass browser autoplay restrictions
-    const playMusic = () => {
-      if (bgMusic.current) {
-        bgMusic.current.play().catch(e => console.log("Autoplay blocked:", e));
-        window.removeEventListener('click', playMusic);
-        window.removeEventListener('touchstart', playMusic);
-      }
+    const handleInteraction = () => {
+      unlockAndPlayAudio();
     };
 
-    window.addEventListener('click', playMusic);
-    window.addEventListener('touchstart', playMusic);
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
+    window.addEventListener('touchend', handleInteraction);
+    window.addEventListener('keydown', handleInteraction);
 
     return () => {
-      if (bgMusic.current) {
-        bgMusic.current.pause();
-        bgMusic.current = null;
-      }
-      window.removeEventListener('click', playMusic);
-      window.removeEventListener('touchstart', playMusic);
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('touchend', handleInteraction);
+      window.removeEventListener('keydown', handleInteraction);
     };
   }, []);
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
