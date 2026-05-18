@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Trophy, Volume2, VolumeX, Lock } from 'lucide-react';
+import { Play, Trophy, Volume2, VolumeX, Lock, TrendingUp } from 'lucide-react';
 import { GameModeType } from '../App';
 import { bgMusic } from '../audio';
+import BettingHub from './BettingHub';
 
 interface HomeProps {
   onStart: (mode: GameModeType) => void;
@@ -170,7 +171,7 @@ const SoccerBall = ({ size = 16, className = "" }: { size?: number; className?: 
 export default function Home({ onStart, onLeaderboard }: HomeProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMuted, setIsMuted] = useState(() => bgMusic.muted);
-  const [activeCategory, setActiveCategory] = useState<'worldcup' | 'classic'>('worldcup');
+  const [activeCategory, setActiveCategory] = useState<'worldcup' | 'classic' | 'betting'>('worldcup');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -338,74 +339,107 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
               <SoccerBall size={16} />
               CLASSIC
             </motion.button>
+            <motion.button
+              onClick={() => setActiveCategory('betting')}
+              animate={activeCategory === 'betting' ? {
+                boxShadow: [
+                  '0 0 10px rgba(255, 184, 0, 0.4), 2px 2px 0px 0px #f4f1ea',
+                  '0 0 25px rgba(255, 184, 0, 0.8), 2px 2px 0px 0px #f4f1ea',
+                  '0 0 10px rgba(255, 184, 0, 0.4), 2px 2px 0px 0px #f4f1ea'
+                ]
+              } : {
+                boxShadow: 'none'
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{
+                boxShadow: {
+                  repeat: Infinity,
+                  duration: 2,
+                  ease: 'easeInOut'
+                }
+              }}
+              className={`flex-1 py-2.5 px-3 text-center font-anton text-base sm:text-lg uppercase transition-all duration-300 rounded-md cursor-pointer flex items-center justify-center gap-2 border-2 ${
+                activeCategory === 'betting'
+                  ? 'bg-brand-gold text-brand-black border-brand-white shadow-[2px_2px_0px_0px_#f4f1ea]'
+                  : 'border-transparent text-zinc-400 hover:text-brand-white hover:bg-zinc-800'
+              }`}
+            >
+              <TrendingUp size={16} />
+              BETTING
+            </motion.button>
           </div>
 
-          {/* Square Cards Grid */}
-          <motion.div
-            layout
-            className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 pb-8"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredModes.map((item) => (
-                <motion.div
-                  layout
-                  key={item.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  onClick={() => item.isActive && item.mode && onStart(item.mode)}
-                  className={`group relative aspect-square w-full border-2 brutal-border ${
-                    item.isActive 
-                      ? 'border-zinc-800 hover:border-brand-green bg-zinc-900 cursor-pointer' 
-                      : 'border-zinc-800 bg-zinc-900/50 cursor-not-allowed opacity-60'
-                  } p-3 sm:p-4 transition-all overflow-hidden flex flex-col justify-between rounded-lg shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)]`}
-                >
-                  {/* Background Image with opacity */}
-                  <div
-                    className="absolute inset-0 bg-cover bg-center grayscale opacity-10 group-hover:opacity-20 group-hover:scale-105 transition-all duration-500"
-                    style={{ backgroundImage: `url(${item.image})` }}
-                  ></div>
-
-                  {/* Card Top: Badges and Icons */}
-                  <div className="relative z-10 flex justify-between items-start w-full">
-                    <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 border ${
+          {/* Content Area Switcher */}
+          {activeCategory === 'betting' ? (
+            <BettingHub />
+          ) : (
+            <motion.div
+              layout
+              className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 pb-8"
+            >
+              <AnimatePresence mode="popLayout">
+                {filteredModes.map((item) => (
+                  <motion.div
+                    layout
+                    key={item.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => item.isActive && item.mode && onStart(item.mode)}
+                    className={`group relative aspect-square w-full border-2 brutal-border ${
                       item.isActive 
-                        ? 'text-brand-green border-brand-green/30 bg-brand-green/5' 
-                        : 'text-zinc-500 border-zinc-700 bg-zinc-800/30'
-                    }`}>
-                      {item.tag}
-                    </span>
-                    {!item.isActive && (
-                      <Lock size={12} className="text-zinc-500" />
-                    )}
-                  </div>
+                        ? 'border-zinc-800 hover:border-brand-green bg-zinc-900 cursor-pointer' 
+                        : 'border-zinc-800 bg-zinc-900/50 cursor-not-allowed opacity-60'
+                    } p-3 sm:p-4 transition-all overflow-hidden flex flex-col justify-between rounded-lg shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)]`}
+                  >
+                    {/* Background Image with opacity */}
+                    <div
+                      className="absolute inset-0 bg-cover bg-center grayscale opacity-10 group-hover:opacity-20 group-hover:scale-105 transition-all duration-500"
+                      style={{ backgroundImage: `url(${item.image})` }}
+                    ></div>
 
-                  {/* Card Bottom: Text and play indicator */}
-                  <div className="relative z-10 w-full mt-auto text-left">
-                    <h4 className="font-anton text-lg sm:text-xl md:text-2xl uppercase leading-none text-brand-white group-hover:text-brand-green transition-colors break-words text-balance">
-                      {item.title}
-                    </h4>
-                    <p className="font-mono text-[8px] sm:text-[9px] text-zinc-400 mt-1 leading-tight group-hover:text-zinc-300 transition-colors line-clamp-2">
-                      {item.subtitle}
-                    </p>
-                    {item.isActive && item.dbInfo && (
-                      <span className="text-[8px] font-mono text-brand-green/70 block mt-1 tracking-wider">
-                        {item.dbInfo}
+                    {/* Card Top: Badges and Icons */}
+                    <div className="relative z-10 flex justify-between items-start w-full">
+                      <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 border ${
+                        item.isActive 
+                          ? 'text-brand-green border-brand-green/30 bg-brand-green/5' 
+                          : 'text-zinc-500 border-zinc-700 bg-zinc-800/30'
+                      }`}>
+                        {item.tag}
                       </span>
-                    )}
-                  </div>
-
-                  {/* Play hover overlay micro-animation */}
-                  {item.isActive && (
-                    <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-brand-green text-brand-black p-1 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-md">
-                      <Play fill="currentColor" size={10} />
+                      {!item.isActive && (
+                        <Lock size={12} className="text-zinc-500" />
+                      )}
                     </div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+
+                    {/* Card Bottom: Text and play indicator */}
+                    <div className="relative z-10 w-full mt-auto text-left">
+                      <h4 className="font-anton text-lg sm:text-xl md:text-2xl uppercase leading-none text-brand-white group-hover:text-brand-green transition-colors break-words text-balance">
+                        {item.title}
+                      </h4>
+                      <p className="font-mono text-[8px] sm:text-[9px] text-zinc-400 mt-1 leading-tight group-hover:text-zinc-300 transition-colors line-clamp-2">
+                        {item.subtitle}
+                      </p>
+                      {item.isActive && item.dbInfo && (
+                        <span className="text-[8px] font-mono text-brand-green/70 block mt-1 tracking-wider">
+                          {item.dbInfo}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Play hover overlay micro-animation */}
+                    {item.isActive && (
+                      <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-brand-green text-brand-black p-1 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-md">
+                        <Play fill="currentColor" size={10} />
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
         </section>
       </div>
 
