@@ -4,9 +4,10 @@ import Home from './components/Home';
 import Game from './components/Game';
 import Result from './components/Result';
 import Leaderboard from './components/Leaderboard';
+import StartingXI from './components/StartingXI';
 import { unlockAndPlayAudio } from './audio';
 
-export type GameModeType = 'goals' | 'market' | 'intlGoals' | 'age';
+export type GameModeType = 'goals' | 'market' | 'intlGoals' | 'age' | 'startingXI';
 export type Screen = 'home' | 'game' | 'result' | 'leaderboard';
 
 export default function App() {
@@ -63,9 +64,28 @@ export default function App() {
     const saved = localStorage.getItem('football_highest_score_age');
     return saved ? parseInt(saved, 10) : 0;
   });
+  const [attemptsStartingXI, setAttemptsStartingXI] = useState(() => {
+    const saved = localStorage.getItem('football_high_low_attempts_startingxi');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  const [highScoreStartingXI, setHighScoreStartingXI] = useState(() => {
+    const saved = localStorage.getItem('football_highest_score_startingxi');
+    return saved ? parseInt(saved, 10) : 0;
+  });
 
-  const attempts = gameMode === 'goals' ? attemptsGoals : gameMode === 'market' ? attemptsMarket : gameMode === 'intlGoals' ? attemptsIntlGoals : attemptsAge;
-  const highScore = gameMode === 'goals' ? highScoreGoals : gameMode === 'market' ? highScoreMarket : gameMode === 'intlGoals' ? highScoreIntlGoals : highScoreAge;
+  const attempts = 
+    gameMode === 'goals' ? attemptsGoals : 
+    gameMode === 'market' ? attemptsMarket : 
+    gameMode === 'intlGoals' ? attemptsIntlGoals : 
+    gameMode === 'age' ? attemptsAge : 
+    attemptsStartingXI;
+
+  const highScore = 
+    gameMode === 'goals' ? highScoreGoals : 
+    gameMode === 'market' ? highScoreMarket : 
+    gameMode === 'intlGoals' ? highScoreIntlGoals : 
+    gameMode === 'age' ? highScoreAge : 
+    highScoreStartingXI;
 
   const startGame = (mode: GameModeType = 'goals') => {
     setGameMode(mode);
@@ -99,6 +119,18 @@ export default function App() {
         setHighScoreIntlGoals(finalScore);
         localStorage.setItem('football_highest_score_intl', finalScore.toString());
       }
+    } else if (gameMode === 'startingXI') {
+      const newAttempts = attemptsStartingXI + 1;
+      setAttemptsStartingXI(newAttempts);
+      localStorage.setItem('football_high_low_attempts_startingxi', newAttempts.toString());
+      if (finalScore > highScoreStartingXI) {
+        setHighScoreStartingXI(finalScore);
+        localStorage.setItem('football_highest_score_startingxi', finalScore.toString());
+      }
+      setScore(finalScore);
+      setHasWon(won);
+      // Stay on game screen to display historical names in StartingXI results
+      return;
     } else {
       const newAttempts = attemptsAge + 1;
       setAttemptsAge(newAttempts);
@@ -122,7 +154,9 @@ export default function App() {
           {/* @ts-expect-error */}
           {currentScreen === 'home' && <Home key="home" onStart={startGame} onLeaderboard={() => setCurrentScreen('leaderboard')} />}
           {/* @ts-expect-error */}
-          {currentScreen === 'game' && <Game key="game" gameMode={gameMode} onEnd={endGame} />}
+          {currentScreen === 'game' && gameMode === 'startingXI' && <StartingXI key="startingXI" onEnd={endGame} onHome={() => setCurrentScreen('home')} />}
+          {/* @ts-expect-error */}
+          {currentScreen === 'game' && gameMode !== 'startingXI' && <Game key="game" gameMode={gameMode} onEnd={endGame} />}
           {/* @ts-expect-error */}
           {currentScreen === 'result' && <Result key="result" gameMode={gameMode} score={score} highScore={highScore} hasWon={hasWon} attempts={attempts} onPlayAgain={() => startGame(gameMode)} onHome={() => setCurrentScreen('home')} />}
           {/* @ts-expect-error */}
