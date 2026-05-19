@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Clock, X, HelpCircle, Check, Play, RefreshCw, Eye } from 'lucide-react';
+import { Clock, X, HelpCircle, Check, Play, RefreshCw, Eye } from 'lucide-react';
 import { ALL_SQUADS, Squad, Player } from '../data/squads';
 import { tickingAudio, correctAudio, incorrectAudio } from '../audio';
 
@@ -348,7 +348,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                   className="absolute inset-0 opacity-10"
                   style={{ backgroundColor: selectedSquad.jerseyColor }}
                 />
-                <Trophy size={48} className="text-brand-gold relative z-10 animate-bounce" />
+                <img src="/assets/worldcupicon.png" alt="World Cup" className="w-16 h-16 sm:w-20 sm:h-20 object-contain relative z-10 animate-bounce" />
               </div>
 
               <div>
@@ -411,7 +411,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                   onClick={handleKickOff}
                   className="flex-1 py-4 font-anton text-base sm:text-lg bg-brand-green text-brand-black border-4 border-brand-white rounded-xl transition-all shadow-[4px_4px_0px_0px_#f4f1ea] hover:shadow-[1px_1px_0px_0px_#f4f1ea] hover:translate-x-[3px] hover:translate-y-[3px] uppercase flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Trophy size={18} />
+                  <img src="/assets/worldcupicon.png" alt="World Cup" className="w-5 h-5 object-contain" />
                   KICK OFF!
                 </button>
               </div>
