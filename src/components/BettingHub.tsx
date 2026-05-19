@@ -367,7 +367,7 @@ export default function BettingHub() {
                     type="number"
                     value={wager}
                     onChange={(e) => setWager(Math.max(1, Number(e.target.value)))}
-                    className="w-full bg-[#0f212e] text-white px-3 py-3 rounded-md border border-[#2F4550] focus:outline-none focus:border-[#00e701] font-bold text-sm font-mono transition-colors"
+                    className="w-full bg-[#0f212e] text-white px-3 py-3 rounded-md border border-[#2F4550] focus:outline-none focus:border-[#00e701] font-bold text-base font-mono transition-colors"
                   />
                 </div>
               </div>

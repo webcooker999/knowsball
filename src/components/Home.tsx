@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Play, Trophy, Volume2, VolumeX, Lock, TrendingUp } from 'lucide-react';
 import { GameModeType } from '../App';

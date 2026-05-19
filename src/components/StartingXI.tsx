@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Clock, X, HelpCircle, Check, Play, RefreshCw, Eye } from 'lucide-react';
 import { ALL_SQUADS, Squad, Player } from '../data/squads';
@@ -593,7 +593,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                   placeholder="Enter any player's name..."
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
-                  className="flex-1 bg-zinc-900 text-brand-white px-3 py-3 brutal-border border-brand-white rounded-lg focus:outline-none focus:border-brand-gold text-sm sm:text-base font-semibold"
+                  className="flex-1 bg-zinc-900 text-brand-white px-3 py-3 brutal-border border-brand-white rounded-lg focus:outline-none focus:border-brand-gold text-base font-semibold"
                 />
                 <button
                   type="submit"
