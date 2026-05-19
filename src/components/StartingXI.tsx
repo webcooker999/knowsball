@@ -28,6 +28,41 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
   const [gameOver, setGameOver] = useState(false);
   const [revealedAll, setRevealedAll] = useState(false);
 
+  // Dynamic visual viewport height to maintain exact screen fit during virtual keyboard overlays
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+
+  // Pre-compiled list of unique player names from all squads to use for suggestions
+  const allPlayerNames = React.useMemo(() => {
+    const names = new Set<string>();
+    ALL_SQUADS.forEach((squad) => {
+      squad.players.forEach((player) => {
+        names.add(player.name);
+      });
+    });
+    return Array.from(names);
+  }, []);
+
+  // Filter and sort suggestions as the user types (activated at 3+ characters)
+  const suggestions = React.useMemo(() => {
+    const query = inputVal.trim().toLowerCase();
+    if (query.length < 3) return [];
+
+    const filtered = allPlayerNames.filter((name) =>
+      name.toLowerCase().includes(query)
+    );
+
+    // Sort to prioritize names starting with the query, followed by secondary matches
+    filtered.sort((a, b) => {
+      const aStartsWith = a.toLowerCase().startsWith(query);
+      const bStartsWith = b.toLowerCase().startsWith(query);
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+      return a.localeCompare(b);
+    });
+
+    return filtered.slice(0, 5);
+  }, [inputVal, allPlayerNames]);
+
   // Keyboard and focus references
   const inputRef = useRef<HTMLInputElement>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -109,6 +144,26 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
     };
   }, []);
 
+  // Dynamic visual viewport size adjustment to accommodate mobile keypads
+  useEffect(() => {
+    if (!window.visualViewport) return;
+    const handleResize = () => {
+      setViewportHeight(window.visualViewport.height);
+      // Recenter scroll coordinates immediately
+      if (document.activeElement?.tagName === 'INPUT') {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+    handleResize();
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+    };
+  }, []);
+
   // Prevent viewport shifting/scrolling on iOS Safari when typing
   useEffect(() => {
     const preventScroll = () => {
@@ -138,11 +193,10 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
   };
 
   // 4. SUBMIT GUESS
-  const handleGuessSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inputVal.trim() || !selectedSquad) return;
+  const submitName = (valueToSubmit: string) => {
+    if (!valueToSubmit.trim() || !selectedSquad) return;
 
-    const normalizedInput = inputVal.trim().toLowerCase();
+    const normalizedInput = valueToSubmit.trim().toLowerCase();
     
     // Find if the input matches ANY unguessed player in the squad
     const matchedPlayer = selectedSquad.players.find(p => {
@@ -185,6 +239,11 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
         }, 500);
       }
     }
+  };
+
+  const handleGuessSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    submitName(inputVal);
   };
 
 
@@ -321,7 +380,10 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-zinc-950 font-sans text-brand-white overflow-hidden relative">
+    <div
+      style={isPlaying && !gameOver ? { height: `${viewportHeight}px` } : undefined}
+      className="flex-1 flex flex-col h-full bg-zinc-950 font-sans text-brand-white overflow-hidden relative"
+    >
       {/* 1. SETUP / SELECTION SCREEN */}
       {!isPlaying && !gameOver && (
         <div className="flex-1 flex flex-col p-4 sm:p-6 justify-between overflow-y-auto z-10">
@@ -597,6 +659,25 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Autocomplete Suggestion Bar */}
+              {suggestions.length > 0 && (
+                <div 
+                  className="flex gap-2 overflow-x-auto py-1 px-0.5 scrollbar-none snap-x"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {suggestions.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => submitName(name)}
+                      className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-brand-gold font-mono text-xs font-bold rounded-full brutal-border border-zinc-700 hover:border-brand-gold transition-all cursor-pointer snap-start"
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Guess Entry Form */}
               <form onSubmit={handleGuessSubmit} className="flex gap-2">
