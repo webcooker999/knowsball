@@ -109,6 +109,19 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
     };
   }, []);
 
+  // Prevent viewport shifting/scrolling on iOS Safari when typing
+  useEffect(() => {
+    const preventScroll = () => {
+      if (document.activeElement?.tagName === 'INPUT') {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('scroll', preventScroll);
+    return () => {
+      window.removeEventListener('scroll', preventScroll);
+    };
+  }, []);
+
   // 3. START GAME
   const handleKickOff = () => {
     if (!selectedSquad) return;
@@ -120,7 +133,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
       setActivePlayer(selectedSquad.players[0]);
     }
     setTimeout(() => {
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
     }, 100);
   };
 
@@ -159,7 +172,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
         setActivePlayer(null);
       }
       setTimeout(() => {
-        inputRef.current?.focus();
+        inputRef.current?.focus({ preventScroll: true });
       }, 50);
     } else {
       // Shake animation and sound feedback
@@ -487,7 +500,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                       onClick={() => {
                         setActivePlayer(player);
                         setTimeout(() => {
-                          inputRef.current?.focus();
+                          inputRef.current?.focus({ preventScroll: true });
                         }, 50);
                       }}
                       animate={isShaking ? {
@@ -593,6 +606,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                   placeholder="Enter any player's name..."
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
+                  onFocus={() => setTimeout(() => window.scrollTo(0, 0), 10)}
                   className="flex-1 bg-zinc-900 text-brand-white px-3 py-3 brutal-border border-brand-white rounded-lg focus:outline-none focus:border-brand-gold text-base font-semibold"
                 />
                 <button

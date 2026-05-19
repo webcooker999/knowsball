@@ -1,5 +1,6 @@
 import { MORE_SQUADS } from './moreSquads';
 import { REAL_SQUADS } from './realSquads';
+import { EVEN_MORE_SQUADS } from './evenMoreSquads';
 
 export interface Player {
   id: string;
@@ -273,4 +274,4 @@ export const SQUADS: Squad[] = [
 
 const markedSQUADS = SQUADS.map(s => ({ ...s, isIconic: true }));
 const markedREAL = REAL_SQUADS.map(s => ({ ...s, isIconic: true }));
-export const ALL_SQUADS = [...markedSQUADS, ...markedREAL, ...MORE_SQUADS];
+export const ALL_SQUADS = [...markedSQUADS, ...markedREAL, ...MORE_SQUADS, ...EVEN_MORE_SQUADS];

@@ -30,25 +30,4 @@ export const unlockAndPlayAudio = () => {
       console.log("Background music play blocked:", e);
       isUnlocked = false; // reset to try again on next interaction
     });
-
-  // Unlock SFX silently
-  const sfxList = [tickingAudio, correctAudio, incorrectAudio];
-  sfxList.forEach(audio => {
-    const originalVolume = audio.volume;
-    audio.volume = 0;
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          audio.pause();
-          audio.volume = originalVolume;
-          audio.currentTime = 0;
-        })
-        .catch(e => {
-          console.log("SFX unlock blocked:", e);
-          audio.volume = originalVolume;
-          isUnlocked = false;
-        });
-    }
-  });
 };
