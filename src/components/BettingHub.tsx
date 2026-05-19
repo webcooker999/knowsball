@@ -222,9 +222,9 @@ export default function BettingHub() {
                       : 'bg-[#1a2c38]/60 border-[#2F4550] hover:border-[#b1bad3]/30 hover:bg-[#1a2c38]'
                   }`}
                 >
-                  {/* Select Badge / Indicator */}
-                  <div className="absolute right-4 top-4 flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-[#b1bad3] bg-[#0f212e] px-2 py-0.5 rounded-full border border-[#2F4550]">
+                  {/* Top Header Metadata Row */}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[10px] font-mono text-[#b1bad3] bg-[#0f212e] px-2.5 py-0.5 rounded-full border border-[#2F4550]">
                       {match.date}
                     </span>
                     <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
@@ -237,9 +237,9 @@ export default function BettingHub() {
                   </div>
 
                   {/* Team matchups */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-lg">{match.emojiLeft}</span>
-                    <span className="font-anton text-base sm:text-lg text-white tracking-wide">
+                    <span className="font-anton text-base sm:text-lg text-white tracking-wide leading-tight">
                       {match.teamHome} <span className="text-[#b1bad3] font-normal">vs</span> {match.teamAway}
                     </span>
                     <span className="text-lg">{match.emojiRight}</span>
