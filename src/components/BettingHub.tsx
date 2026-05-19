@@ -12,6 +12,7 @@ interface CuratedMatch {
   tip: string;
   odds: number;
   description: string;
+  betUrl?: string;
 }
 
 const CURATED_MATCHES: CuratedMatch[] = [
@@ -24,7 +25,8 @@ const CURATED_MATCHES: CuratedMatch[] = [
     date: 'MAY/19',
     tip: 'BTTS + Over 2.5 Goals',
     odds: 1.85,
-    description: 'A massive London derby at Stamford Bridge. Both teams play with high defensive lines and have shown major vulnerabilities at the back this season. Expect a high-paced, chaotic match with plenty of chances on both ends.'
+    description: 'A massive London derby at Stamford Bridge. Both teams play with high defensive lines and have shown major vulnerabilities at the back this season. Expect a high-paced, chaotic match with plenty of chances on both ends.',
+    betUrl: 'https://stake.com/?c=knowsball?betId=b98dafe5-02eb-4dd1-88bf-48f8fa1b5f8b&source=link_shared&modal=bet&iid=sport%3A586952781'
   },
   {
     id: 'match-2',
@@ -35,7 +37,8 @@ const CURATED_MATCHES: CuratedMatch[] = [
     date: 'MAY/23',
     tip: 'Bayern Munich WIN + Over 2.5 Goals',
     odds: 1.75,
-    description: "The DFB-Pokal Cup Final in Berlin. Stuttgart has had an incredible run, but Bayern's attack is overwhelming on the big stage. When domestic hardware is on the line, Bayern rarely misses the chance to ruthlessly secure the trophy."
+    description: "The DFB-Pokal Cup Final in Berlin. Stuttgart has had an incredible run, but Bayern's attack is overwhelming on the big stage. When domestic hardware is on the line, Bayern rarely misses the chance to ruthlessly secure the trophy.",
+    betUrl: 'https://stake.com/?c=knowsball&iid=sport%3A586990372&source=link_shared&modal=bet'
   },
   {
     id: 'match-3',
@@ -169,12 +172,12 @@ export default function BettingHub() {
 
   return (
     <div className="w-full flex flex-col gap-6 p-4 sm:p-6 bg-[#0f212e] min-h-[600px] text-brand-white">
-      
+
       {/* Header Banner */}
       <div className="relative p-5 sm:p-6 rounded-2xl border border-[#2F4550] bg-[#1a2c38] overflow-hidden shadow-lg">
         <div className="relative z-10 flex flex-col gap-2">
           <span className="px-3 py-0.5 bg-[#00e701] text-[#0f212e] text-[10px] font-anton tracking-widest uppercase rounded self-start font-bold">
-            THE PICK FATHER PRESENTS
+            KNOWSBALL PRESENTS
           </span>
           <h2 className="font-anton text-2xl sm:text-4xl text-brand-white uppercase tracking-wide">
             PARLAYS OF THE WEEK
@@ -186,7 +189,7 @@ export default function BettingHub() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-        
+
         {/* Left Side: Curated Slips Feed (7 cols) */}
         <div className="xl:col-span-7 flex flex-col gap-4">
           <div className="flex justify-between items-center px-1">
@@ -194,14 +197,14 @@ export default function BettingHub() {
               Curated Picks ({CURATED_MATCHES.length})
             </h3>
             <div className="flex gap-1 bg-[#0f212e] p-1 rounded-md border border-[#2F4550]">
-              <button 
-                onClick={() => setOddsFormat('decimal')} 
+              <button
+                onClick={() => setOddsFormat('decimal')}
                 className="px-2.5 py-1 rounded text-[10px] font-bold transition-all cursor-pointer bg-[#2F4550] text-white"
               >
                 Decimal
               </button>
-              <button 
-                onClick={() => setOddsFormat('american')} 
+              <button
+                onClick={() => setOddsFormat('american')}
                 className="px-2.5 py-1 rounded text-[10px] font-bold transition-all cursor-pointer text-[#b1bad3]"
               >
                 American
@@ -213,25 +216,23 @@ export default function BettingHub() {
             {CURATED_MATCHES.map((match) => {
               const isSelected = selectedMatches.includes(match.id);
               return (
-                <div 
+                <div
                   key={match.id}
                   onClick={() => toggleMatchSelection(match.id)}
-                  className={`p-5 rounded-xl border-2 transition-all cursor-pointer flex flex-col gap-3 relative ${
-                    isSelected 
-                      ? 'bg-[#1a2c38] border-[#00e701] shadow-[0_0_15px_rgba(0,231,1,0.15)]'
-                      : 'bg-[#1a2c38]/60 border-[#2F4550] hover:border-[#b1bad3]/30 hover:bg-[#1a2c38]'
-                  }`}
+                  className={`p-5 rounded-xl border-2 transition-all cursor-pointer flex flex-col gap-3 relative ${isSelected
+                    ? 'bg-[#1a2c38] border-[#00e701] shadow-[0_0_15px_rgba(0,231,1,0.15)]'
+                    : 'bg-[#1a2c38]/60 border-[#2F4550] hover:border-[#b1bad3]/30 hover:bg-[#1a2c38]'
+                    }`}
                 >
                   {/* Top Header Metadata Row */}
                   <div className="flex items-center justify-between w-full">
                     <span className="text-[10px] font-mono text-[#b1bad3] bg-[#0f212e] px-2.5 py-0.5 rounded-full border border-[#2F4550]">
                       {match.date}
                     </span>
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                      isSelected 
-                        ? 'bg-[#00e701] border-[#00e701] text-[#0f212e]' 
-                        : 'border-[#2F4550]'
-                    }`}>
+                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${isSelected
+                      ? 'bg-[#00e701] border-[#00e701] text-[#0f212e]'
+                      : 'border-[#2F4550]'
+                      }`}>
                       {isSelected && <Check size={12} strokeWidth={3} />}
                     </div>
                   </div>
@@ -263,13 +264,13 @@ export default function BettingHub() {
                   {/* Individual Bet Button */}
                   <div className="flex justify-end pt-2">
                     <a
-                      href="https://stake.com/?c=knowsball"
+                      href={match.betUrl || "https://stake.com/?c=knowsball"}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="px-4 py-2 bg-[#0f212e] border border-[#2F4550] hover:border-[#00e701] text-white hover:text-[#00e701] font-bold text-xs rounded-lg flex items-center gap-1.5 transition-all shadow-inner"
                     >
-                      <span>Bet on Stake</span>
+                      <span>Copy and Bet</span>
                       <ExternalLink size={12} />
                     </a>
                   </div>
@@ -282,7 +283,7 @@ export default function BettingHub() {
         {/* Right Side: Interactive Accumulator/Slip Builder (5 cols) */}
         <div className="xl:col-span-5 flex flex-col gap-4 xl:sticky xl:top-6">
           <div className="bg-[#1a2c38] rounded-xl relative overflow-hidden flex flex-col border border-[#2F4550] shadow-2xl">
-            
+
             {/* Slip Header */}
             <div className="bg-[#1a2c38] p-4 flex items-center justify-between border-b border-[#2F4550]">
               <div className="flex items-center gap-2">
@@ -294,7 +295,7 @@ export default function BettingHub() {
                 </span>
               </div>
               {selectedMatches.length > 0 && (
-                <button 
+                <button
                   onClick={() => setSelectedMatches([])}
                   className="text-xs font-mono text-zinc-400 hover:text-rose-400 flex items-center gap-1 transition-colors cursor-pointer"
                 >
@@ -315,7 +316,7 @@ export default function BettingHub() {
                   </div>
                 ) : (
                   getSelectedMatchesData().map((match) => (
-                    <motion.div 
+                    <motion.div
                       key={match.id}
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
@@ -334,7 +335,7 @@ export default function BettingHub() {
                         <span className="text-[#b1bad3] text-[11px] font-mono">
                           {match.tip}
                         </span>
-                        <button 
+                        <button
                           onClick={() => toggleMatchSelection(match.id)}
                           className="text-[10px] font-mono text-zinc-500 hover:text-rose-400 cursor-pointer"
                         >
@@ -349,7 +350,7 @@ export default function BettingHub() {
 
             {/* Odds, Wager, Returns calculation section */}
             <div className="p-4 bg-[#1a2c38] border-t border-[#2F4550] flex flex-col gap-4">
-              
+
               <div className="flex gap-4">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="text-[#b1bad3] text-xs font-bold">Total Odds</label>
