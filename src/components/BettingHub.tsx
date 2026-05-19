@@ -169,8 +169,10 @@ export default function BettingHub() {
     }
 
     try {
-      const endpoint = region === 'com' ? '/api-stake-com/bet/preview' : '/api-stake-us/bet/preview';
+      const endpoint = region === 'com' ? '/api-stake-com/_api/graphql' : '/api-stake-us/_api/graphql';
       
+      const formattedBetId = betIdInput.trim().includes(':') ? betIdInput.trim() : `sport:${betIdInput.trim()}`;
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -178,7 +180,11 @@ export default function BettingHub() {
           'x-access-token': token,
         },
         body: JSON.stringify({
-          betId: betIdInput.trim(),
+          operationName: "BetPreview",
+          query: "query BetPreview($id: ID!) { bet(id: $id) { id iid payoutMultiplier currency user { name } ... on SportBet { selections { name odds market { name } event { name startTime } outcome { name } } } } }",
+          variables: {
+            id: formattedBetId,
+          }
         }),
       });
 
@@ -192,7 +198,8 @@ export default function BettingHub() {
         throw new Error("Invalid bet structure returned from Stake. The bet may be expired or private.");
       }
 
-      const legs: ParlayLeg[] = (betData.selections || []).map((sel: any, idx: number) => ({
+      const selections = betData.selections || [];
+      const legs: ParlayLeg[] = selections.map((sel: any, idx: number) => ({
         id: `api-leg-${idx}`,
         match: sel.event?.name || 'Unknown Match',
         selection: sel.name || sel.outcome?.name || 'Active Selection',
@@ -204,13 +211,13 @@ export default function BettingHub() {
       const totalOdds = Number(betData.payoutMultiplier) || legs.reduce((acc, leg) => acc * leg.odds, 1);
       
       const syncedParlay: Parlay = {
-        id: `synced-${betData.id}`,
+        id: `synced-${betData.iid || betData.id}`,
         title: `STAKE SYNCED SLIP: @${betData.user?.name || 'VIP User'}`,
         riskLevel: totalOdds < 3 ? 'Low' : totalOdds < 6 ? 'Medium' : 'High',
         totalOdds: parseFloat(totalOdds.toFixed(2)),
         stakeUrl: region === 'com' 
-          ? `https://stake.com/?c=thepickfather&iid=sport%3A${betData.id}&source=my_bet_preview&modal=bet`
-          : `https://stake.us/?c=thepickfather&iid=sport%3A${betData.id}&source=my_bet_preview&modal=bet`,
+          ? `https://stake.com/?c=thepickfather&iid=${encodeURIComponent(formattedBetId)}&source=my_bet_preview&modal=bet`
+          : `https://stake.us/?c=thepickfather&iid=${encodeURIComponent(formattedBetId)}&source=my_bet_preview&modal=bet`,
         description: `Live parlay synced via secure Stake API connection. Originally placed in ${betData.currency?.toUpperCase() || 'USD'}.`,
         legs,
         isCustom: true,
@@ -221,51 +228,9 @@ export default function BettingHub() {
       setSuccessMessage(`Successfully linked Bet ID: ${betIdInput.slice(0, 8)}...`);
       setBetIdInput('');
     } catch (err: any) {
-      console.warn("API bypass simulating fallback.", err);
-      
-      setTimeout(() => {
-        const fallbackParlay: Parlay = {
-          id: `synced-${betIdInput.trim()}`,
-          title: `LIVE SYNC: ${betIdInput.trim().slice(0, 8).toUpperCase()}`,
-          riskLevel: 'High',
-          totalOdds: 7.85,
-          stakeUrl: `https://stake.${region}/?c=thepickfather`,
-          description: `Live secure sandbox preview generated for Stake Bet ID: ${betIdInput.trim().slice(0, 8)}...`,
-          legs: [
-            {
-              id: 'api-fall-1',
-              match: 'Manchester City vs Chelsea',
-              selection: 'Manchester City to Win',
-              market: 'Match Result',
-              odds: 1.62,
-              time: 'Live Sync'
-            },
-            {
-              id: 'api-fall-2',
-              match: 'Real Madrid vs Bayern Munich',
-              selection: 'Both Teams to Score',
-              market: 'BTTS',
-              odds: 1.75,
-              time: 'Live Sync'
-            },
-            {
-              id: 'api-fall-3',
-              match: 'Inter Milan vs AC Milan',
-              selection: 'Over 2.5 Goals',
-              market: 'Total Goals',
-              odds: 2.15,
-              time: 'Live Sync'
-            }
-          ],
-          isCustom: true,
-        };
-        
-        // Add to our list and select it so it becomes fully visible visually!
-        setAllParlays([fallbackParlay, ...WEEKLY_PARLAYS]);
-        setSelectedParlay(fallbackParlay);
-        setSuccessMessage(`Connected via Sandbox! Secured Bet ID: ${betIdInput.slice(0, 8)}...`);
-        setIsLoading(false);
-      }, 800);
+      console.warn("API direct request failed.", err);
+      setErrorMessage(`Stake API Connection Error: Could not fetch bet slip. Check your API Key or try again later. Details: ${err.message}`);
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
       // Auto-dismiss messages

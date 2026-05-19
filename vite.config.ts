@@ -21,7 +21,7 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api-stake-com': {
-          target: 'https://api.stake.com',
+          target: 'https://stake.com',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api-stake-com/, ''),
           headers: {
@@ -30,7 +30,7 @@ export default defineConfig(({mode}) => {
           },
         },
         '/api-stake-us': {
-          target: 'https://api.stake.us',
+          target: 'https://stake.us',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api-stake-us/, ''),
           headers: {
