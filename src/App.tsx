@@ -6,9 +6,10 @@ import Result from './components/Result';
 import Leaderboard from './components/Leaderboard';
 import StartingXI from './components/StartingXI';
 import WhoAmI from './components/WhoAmI';
+import Crossword from './components/Crossword';
 import { unlockAndPlayAudio } from './audio';
 
-export type GameModeType = 'goals' | 'market' | 'intlGoals' | 'age' | 'startingXI' | 'startingXIClassic' | 'whoAmI';
+export type GameModeType = 'goals' | 'market' | 'intlGoals' | 'age' | 'startingXI' | 'startingXIClassic' | 'whoAmI' | 'crossword';
 export type Screen = 'home' | 'game' | 'result' | 'leaderboard';
 
 const getLocalDateString = () => {
@@ -144,7 +145,7 @@ export default function App() {
 
   const startGame = (mode: GameModeType = 'goals') => {
     // Deduct 1 life immediately when game begins!
-    if (!isDev && mode !== 'whoAmI') {
+    if (!isDev && mode !== 'whoAmI' && mode !== 'crossword') {
       setLives((prev) => {
         const nextLives = Math.max(0, prev - 1);
         localStorage.setItem('knowsball_lives', nextLives.toString());
@@ -252,8 +253,16 @@ export default function App() {
               lives={lives}
             />
           )}
+          {currentScreen === 'game' && gameMode === 'crossword' && (
+            <Crossword
+              onDeductLife={deductLife}
+              onHome={() => setCurrentScreen('home')}
+              isDev={isDev}
+              lives={lives}
+            />
+          )}
           {/* @ts-expect-error */}
-          {currentScreen === 'game' && gameMode !== 'startingXI' && gameMode !== 'startingXIClassic' && gameMode !== 'whoAmI' && <Game key="game" gameMode={gameMode} onEnd={endGame} />}
+          {currentScreen === 'game' && gameMode !== 'startingXI' && gameMode !== 'startingXIClassic' && gameMode !== 'whoAmI' && gameMode !== 'crossword' && <Game key="game" gameMode={gameMode} onEnd={endGame} />}
           {/* @ts-expect-error */}
           {currentScreen === 'result' && <Result key="result" gameMode={gameMode} score={score} highScore={highScore} hasWon={hasWon} attempts={attempts} onPlayAgain={() => startGame(gameMode)} onHome={() => setCurrentScreen('home')} />}
           {/* @ts-expect-error */}

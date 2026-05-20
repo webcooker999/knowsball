@@ -95,6 +95,17 @@ const GAME_MODES: GameModeItem[] = [
     dbInfo: '100 Legend Pool'
   },
   {
+    id: 'wc-crossword',
+    mode: 'crossword',
+    title: 'WC CROSSWORD',
+    subtitle: 'Solve the daily thematic World Cup crossword',
+    tag: 'Active // Vol. 1',
+    category: 'worldcup',
+    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=600',
+    isActive: true,
+    dbInfo: 'Daily Thematic Grid'
+  },
+  {
     id: 'wc-assists',
     title: 'WC ASSISTS',
     subtitle: 'Top playmakers in tournament stages',
