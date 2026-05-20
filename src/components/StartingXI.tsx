@@ -1,15 +1,66 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Clock, X, HelpCircle, Check, Play, RefreshCw, Eye } from 'lucide-react';
-import { ALL_SQUADS, Squad, Player } from '../data/squads';
+import { Clock, X, HelpCircle, Check, Play, RefreshCw, Eye, Trophy } from 'lucide-react';
+import { ALL_SQUADS, CLUB_SQUADS, Squad, Player } from '../data/squads';
 import { tickingAudio, correctAudio, incorrectAudio } from '../audio';
+import { CLUB_PLAYER_NATIONALITIES } from '../data/nationalities';
+
+// Helper to strip diacritics / accents for robust matching
+const stripAccents = (str: string) => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+const getPlayerNationality = (player: Player) => {
+  if (!player) return 'Unknown';
+  
+  // 1. Exact match
+  if (CLUB_PLAYER_NATIONALITIES[player.name]) {
+    return CLUB_PLAYER_NATIONALITIES[player.name];
+  }
+  
+  // 2. Case-insensitive lookup
+  const normalized = player.name.toLowerCase().trim();
+  for (const [name, nat] of Object.entries(CLUB_PLAYER_NATIONALITIES)) {
+    if (name.toLowerCase().trim() === normalized) {
+      return nat;
+    }
+  }
+  
+  // 3. Accent-insensitive lookup
+  const strippedName = stripAccents(player.name).toLowerCase().trim();
+  for (const [name, nat] of Object.entries(CLUB_PLAYER_NATIONALITIES)) {
+    if (stripAccents(name).toLowerCase().trim() === strippedName) {
+      return nat;
+    }
+  }
+
+  // 4. Try aliases
+  if (player.aliases) {
+    for (const alias of player.aliases) {
+      const normAlias = alias.toLowerCase().trim();
+      const strippedAlias = stripAccents(alias).toLowerCase().trim();
+      
+      for (const [name, nat] of Object.entries(CLUB_PLAYER_NATIONALITIES)) {
+        const normName = name.toLowerCase().trim();
+        const strippedNameVal = stripAccents(name).toLowerCase().trim();
+        if (normName === normAlias || strippedNameVal === strippedAlias) {
+          return nat;
+        }
+      }
+    }
+  }
+  
+  return 'Unknown';
+};
 
 interface StartingXIProps {
   onEnd: (score: number, won: boolean) => void;
   onHome: () => void;
+  mode?: 'worldcup' | 'classic';
+  key?: any;
 }
 
-export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
+export default function StartingXI({ onEnd, onHome, mode = 'worldcup' }: StartingXIProps) {
   // Game Setup States
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedSquad, setSelectedSquad] = useState<Squad | null>(null);
@@ -27,20 +78,33 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
   const [elapsedTime, setElapsedTime] = useState(0); // for casual mode
   const [gameOver, setGameOver] = useState(false);
   const [revealedAll, setRevealedAll] = useState(false);
+  const [skipsLeft, setSkipsLeft] = useState(3);
 
   // Dynamic visual viewport height to maintain exact screen fit during virtual keyboard overlays
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
 
+  // Pre-compiled active squads based on current game mode selection
+  const activeSquads = React.useMemo(() => {
+    return mode === 'classic' ? CLUB_SQUADS : ALL_SQUADS;
+  }, [mode]);
+
   // Pre-compiled list of unique player names from all squads to use for suggestions
   const allPlayerNames = React.useMemo(() => {
     const names = new Set<string>();
-    ALL_SQUADS.forEach((squad) => {
+    activeSquads.forEach((squad) => {
       squad.players.forEach((player) => {
         names.add(player.name);
       });
     });
     return Array.from(names);
-  }, []);
+  }, [activeSquads]);
+
+  // Extract the active club name for classic mode squads dynamically
+  const squadClub = React.useMemo(() => {
+    return mode === 'classic' && selectedSquad && selectedSquad.players.length > 0
+      ? selectedSquad.players[0].hintClub
+      : null;
+  }, [mode, selectedSquad]);
 
   // Filter and sort suggestions as the user types (activated at 3+ characters)
   const suggestions = React.useMemo(() => {
@@ -71,10 +135,10 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
   const pickRandomSquad = (forceHardMode?: boolean) => {
     const hard = forceHardMode !== undefined ? forceHardMode : isHardMode;
     const pool = hard 
-      ? ALL_SQUADS 
-      : ALL_SQUADS.filter((s) => s.isIconic === true);
+      ? activeSquads 
+      : activeSquads.filter((s) => s.isIconic === true);
     
-    const activePool = pool.length > 0 ? pool : ALL_SQUADS;
+    const activePool = pool.length > 0 ? pool : activeSquads;
     
     // Filter out current squad to avoid immediate repetition if pool allows
     let finalPool = activePool;
@@ -103,7 +167,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
 
   useEffect(() => {
     pickRandomSquad();
-  }, []);
+  }, [activeSquads]);
 
   // 2. TIMER SYSTEM
   useEffect(() => {
@@ -268,6 +332,13 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
 
   const handleBackToSetup = () => {
     setIsPlaying(false);
+    setSkipsLeft(3);
+    pickRandomSquad();
+  };
+
+  const handleDifferentSquad = () => {
+    if (skipsLeft <= 0) return;
+    setSkipsLeft((prev) => prev - 1);
     pickRandomSquad();
   };
 
@@ -389,7 +460,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
         <div className="flex-1 flex flex-col p-4 sm:p-6 justify-between overflow-y-auto z-10">
           <div className="flex items-center justify-between border-b-4 border-brand-white pb-3 mb-4">
             <h1 className="font-anton text-2xl sm:text-4xl tracking-wide text-brand-gold">
-              🏆 STARTING XI
+              {mode === 'classic' ? '🏆 CLASSIC XI' : '🏆 STARTING XI'}
             </h1>
             <button
               onClick={onHome}
@@ -410,7 +481,11 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                   className="absolute inset-0 opacity-10"
                   style={{ backgroundColor: selectedSquad.jerseyColor }}
                 />
-                <img src="/assets/worldcupicon.png" alt="World Cup" className="w-16 h-16 sm:w-20 sm:h-20 object-contain relative z-10 animate-bounce" />
+                {mode === 'classic' ? (
+                  <Trophy className="w-16 h-16 sm:w-20 sm:h-20 text-brand-gold relative z-10 animate-bounce" strokeWidth={1.5} />
+                ) : (
+                  <img src="/assets/worldcupicon.png" alt="World Cup" className="w-16 h-16 sm:w-20 sm:h-20 object-contain relative z-10 animate-bounce" />
+                )}
               </div>
 
               <div>
@@ -418,10 +493,10 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                   LEGENDARY SQUAD #{selectedSquad.id.split('-').pop()}
                 </span>
                 <h2 className="font-anton text-3xl sm:text-5xl uppercase mt-3 tracking-wide leading-none text-brand-white">
-                  {selectedSquad.country}
+                  {squadClub || selectedSquad.country}
                 </h2>
                 <h3 className="font-anton text-2xl sm:text-3xl text-brand-gold mt-1 tracking-wider">
-                  WORLD CUP {selectedSquad.year}
+                  {mode === 'classic' ? 'CLASSIC XI' : 'WORLD CUP'} {selectedSquad.year}
                 </h3>
                 <p className="text-zinc-400 text-xs sm:text-sm mt-2 italic font-mono">
                   "{selectedSquad.squadName}" • Formation {selectedSquad.formation}
@@ -463,17 +538,26 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
               {/* Action Buttons */}
               <div className="flex gap-2 w-full mt-2">
                 <button
-                  onClick={pickRandomSquad}
-                  className="flex-1 py-4 font-anton text-sm sm:text-base bg-zinc-900 border-2 border-zinc-700 hover:bg-zinc-800 rounded-xl transition-all uppercase flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={handleDifferentSquad}
+                  disabled={skipsLeft <= 0}
+                  className={`flex-1 py-4 font-anton text-sm sm:text-base bg-zinc-900 border-2 rounded-xl transition-all uppercase flex items-center justify-center gap-2 ${
+                    skipsLeft <= 0
+                      ? 'border-zinc-800 text-zinc-600 bg-zinc-950 cursor-not-allowed opacity-50'
+                      : 'border-zinc-700 hover:bg-zinc-800 text-brand-white cursor-pointer'
+                  }`}
                 >
                   <RefreshCw size={16} />
-                  Different Squad
+                  Different Squad ({skipsLeft} Left)
                 </button>
                 <button
                   onClick={handleKickOff}
                   className="flex-1 py-4 font-anton text-base sm:text-lg bg-brand-green text-brand-black border-4 border-brand-white rounded-xl transition-all shadow-[4px_4px_0px_0px_#f4f1ea] hover:shadow-[1px_1px_0px_0px_#f4f1ea] hover:translate-x-[3px] hover:translate-y-[3px] uppercase flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <img src="/assets/worldcupicon.png" alt="World Cup" className="w-5 h-5 object-contain" />
+                  {mode === 'classic' ? (
+                    <Trophy size={20} className="text-brand-black" />
+                  ) : (
+                    <img src="/assets/worldcupicon.png" alt="World Cup" className="w-5 h-5 object-contain" />
+                  )}
                   KICK OFF!
                 </button>
               </div>
@@ -494,10 +578,10 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
           <div className="p-3 bg-zinc-950 border-b-4 border-brand-white flex items-center justify-between z-20">
             <div className="flex flex-col">
               <span className="font-anton text-sm sm:text-lg uppercase text-brand-white leading-none">
-                {selectedSquad.country}
+                {squadClub || selectedSquad.country}
               </span>
               <span className="text-[10px] sm:text-xs text-brand-gold font-anton tracking-wider mt-0.5 leading-none">
-                {selectedSquad.year} • {selectedSquad.formation}
+                {mode === 'classic' ? 'CLASSIC XI' : 'WORLD CUP'} {selectedSquad.year} • {selectedSquad.formation}
               </span>
             </div>
 
@@ -653,8 +737,17 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                       <span className="text-brand-white font-mono text-sm tracking-wider">{activePlayer.hintInitials}</span>
                     </div>
                     <div>
-                      <span className="font-bold text-zinc-400 uppercase mr-1">Club in {selectedSquad.year}:</span>
-                      <span className="text-brand-white">{activePlayer.hintClub}</span>
+                      {mode === 'classic' ? (
+                        <>
+                          <span className="font-bold text-zinc-400 uppercase mr-1">Nationality:</span>
+                          <span className="text-brand-white">{getPlayerNationality(activePlayer)}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-bold text-zinc-400 uppercase mr-1">Club in {selectedSquad.year}:</span>
+                          <span className="text-brand-white">{activePlayer.hintClub}</span>
+                        </>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -739,7 +832,7 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                 {guessedPlayerIds.length === selectedSquad.players.length ? "🌟 MAXIMUM IQ!" : "FULL TIME!"}
               </h1>
               <h3 className="font-anton text-lg sm:text-xl text-brand-gold mt-1 tracking-wider uppercase">
-                {selectedSquad.country} Class of {selectedSquad.year}
+                {squadClub || selectedSquad.country} Class of {selectedSquad.year}
               </h3>
             </div>
 
@@ -781,7 +874,9 @@ export default function StartingXI({ onEnd, onHome }: StartingXIProps) {
                       </span>
                       <div className="flex-1 flex flex-col">
                         <span className="font-bold">{player.name}</span>
-                        <span className="text-[9px] text-zinc-400">{player.positionLabel} • {player.hintClub}</span>
+                        <span className="text-[9px] text-zinc-400">
+                          {player.positionLabel} • {mode === 'classic' ? getPlayerNationality(player) : player.hintClub}
+                        </span>
                       </div>
                       {gotIt ? <Check size={14} /> : <X size={14} />}
                     </div>

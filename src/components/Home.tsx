@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Trophy, Volume2, VolumeX, Lock, TrendingUp } from 'lucide-react';
+import { Play, Trophy, Volume2, VolumeX, Lock, TrendingUp, Heart } from 'lucide-react';
 import { GameModeType } from '../App';
 import { bgMusic } from '../audio';
 import BettingHub from './BettingHub';
@@ -8,6 +8,8 @@ import BettingHub from './BettingHub';
 interface HomeProps {
   onStart: (mode: GameModeType) => void;
   onLeaderboard: () => void;
+  lives: number;
+  isDev?: boolean;
 }
 
 const slides = [
@@ -82,6 +84,17 @@ const GAME_MODES: GameModeItem[] = [
     dbInfo: '100 Iconic Squads'
   },
   {
+    id: 'who-am-i',
+    mode: 'whoAmI',
+    title: 'WHO AM I?',
+    subtitle: 'Guess the World Cup legend from progressive clues',
+    tag: 'Active // Vol. 1',
+    category: 'worldcup',
+    image: 'https://images.unsplash.com/photo-1518063319789-7217e6706b04?auto=format&fit=crop&q=80&w=600',
+    isActive: true,
+    dbInfo: '100 Legend Pool'
+  },
+  {
     id: 'wc-assists',
     title: 'WC ASSISTS',
     subtitle: 'Top playmakers in tournament stages',
@@ -135,6 +148,17 @@ const GAME_MODES: GameModeItem[] = [
     dbInfo: 'Veterans & Wunderkinds'
   },
   {
+    id: 'classic-xi',
+    mode: 'startingXIClassic',
+    title: 'CLASSIC XI',
+    subtitle: 'Recreate legendary club starting lineups',
+    tag: 'Active // Vol. 1',
+    category: 'classic',
+    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=600',
+    isActive: true,
+    dbInfo: '100 Club Squads'
+  },
+  {
     id: 'career-titles',
     title: 'SILVERWARE',
     subtitle: 'Who collected more career trophies?',
@@ -168,10 +192,14 @@ const SoccerBall = ({ size = 16, className = "" }: { size?: number; className?: 
   </svg>
 );
 
-export default function Home({ onStart, onLeaderboard }: HomeProps) {
+export default function Home({ onStart, onLeaderboard, lives, isDev = false }: HomeProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMuted, setIsMuted] = useState(() => bgMusic.muted);
   const [activeCategory, setActiveCategory] = useState<'worldcup' | 'classic' | 'betting'>('worldcup');
+  
+  // Daily block modal states
+  const [showLivesModal, setShowLivesModal] = useState(false);
+  const [countdown, setCountdown] = useState({ hours: '00', minutes: '00', seconds: '00' });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -180,12 +208,44 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
     return () => clearInterval(timer);
   }, []);
 
+  // Update midnight countdown clock
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0); // 00:00 tomorrow
+      const diffMs = midnight.getTime() - now.getTime();
+      
+      const hours = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60)));
+      const minutes = Math.max(0, Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)));
+      const seconds = Math.max(0, Math.floor((diffMs % (1000 * 60)) / 1000));
+      
+      setCountdown({
+        hours: String(hours).padStart(2, '0'),
+        minutes: String(minutes).padStart(2, '0'),
+        seconds: String(seconds).padStart(2, '0')
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     const newMuted = !bgMusic.muted;
     bgMusic.muted = newMuted;
     localStorage.setItem('knowsball_music_muted', newMuted.toString());
     setIsMuted(newMuted);
+  };
+
+  const handleGameLaunch = (mode: GameModeType) => {
+    if (lives <= 0 && !isDev) {
+      setShowLivesModal(true);
+      return;
+    }
+    onStart(mode);
   };
 
   const slide = slides[currentSlide];
@@ -201,6 +261,26 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
       <div>
         {/* MAG HEADER */}
         <header className="relative flex justify-center items-center p-4 border-b-4 border-brand-white bg-zinc-900 border-t-4 md:border-t-0 mt-0 w-full shrink-0">
+          {/* Daily Lives Display */}
+          <div className="absolute left-3 xs:left-4 md:left-6 flex items-center gap-1.5 bg-zinc-950 px-2 py-1 md:px-3 md:py-1.5 border-2 border-brand-white shadow-[2px_2px_0px_0px_#f4f1ea] md:shadow-[4px_4px_0px_0px_#f4f1ea] select-none">
+            <Heart
+              size={14}
+              className={`transition-all duration-300 fill-rose-500 text-rose-500 ${
+                isDev || lives > 0 ? 'animate-pulse' : 'brightness-50'
+              }`}
+            />
+            <span className="font-anton text-xs xs:text-sm md:text-base leading-none text-brand-white">
+              {isDev ? '∞' : lives}
+            </span>
+            <span className="text-zinc-700 text-[10px] md:text-xs">|</span>
+            <span className="hidden xs:inline font-mono text-[9px] xs:text-[10px] md:text-xs font-bold text-brand-gold tracking-wider">
+              {countdown.hours}:{countdown.minutes}:{countdown.seconds}
+            </span>
+            <span className="inline xs:hidden font-mono text-[9px] font-bold text-brand-gold tracking-wider">
+              {countdown.hours}:{countdown.minutes}
+            </span>
+          </div>
+
           <img
             src="/assets/knowsball.png"
             alt="Knows Ball"
@@ -265,7 +345,7 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => onStart(slide.mode)}
+                onClick={() => handleGameLaunch(slide.mode)}
                 className="w-full bg-brand-green text-brand-black font-anton text-2xl sm:text-3xl md:text-4xl uppercase py-3 sm:py-4 flex items-center justify-center gap-3 border-4 border-brand-white shadow-[6px_6px_0px_0px_#f4f1ea] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#f4f1ea] transition-all cursor-pointer"
               >
                 <Play fill="currentColor" size={24} className="sm:w-[28px] sm:h-[28px]" />
@@ -387,7 +467,7 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    onClick={() => item.isActive && item.mode && onStart(item.mode)}
+                    onClick={() => item.isActive && item.mode && handleGameLaunch(item.mode)}
                     className={`group relative aspect-square w-full border-2 brutal-border ${
                       item.isActive 
                         ? 'border-zinc-800 hover:border-brand-green bg-zinc-900 cursor-pointer' 
@@ -447,6 +527,85 @@ export default function Home({ onStart, onLeaderboard }: HomeProps) {
       <footer className="p-4 text-center border-t border-zinc-900 bg-zinc-950 text-zinc-600 text-[10px] sm:text-xs font-mono uppercase shrink-0">
         © 2026 KnowsBall by Studio147 <br className="md:hidden" /> ALL RIGHTS RESERVED.
       </footer>
+
+      {/* OUT OF LIVES DAILY LOCK MODAL */}
+      <AnimatePresence>
+        {showLivesModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-zinc-900 border-4 border-brand-white rounded-2xl max-w-md w-full p-6 text-center relative shadow-[8px_8px_0px_0px_#f4f1ea] overflow-hidden"
+            >
+              {/* Retro striping */}
+              <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-rose-500 via-brand-gold to-brand-green" />
+              
+              {/* Broken Heart visual */}
+              <div className="flex justify-center my-4 relative select-none">
+                <div className="relative">
+                  <Heart
+                    size={64}
+                    className="text-zinc-700 fill-zinc-800 animate-pulse transform rotate-[-10deg]"
+                  />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-anton text-2xl text-rose-500 tracking-tighter skew-x-[-10deg]">
+                    0/10
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="font-anton text-3xl sm:text-4xl text-rose-500 uppercase tracking-wide">
+                OUT OF LIVES!
+              </h3>
+              
+              <p className="text-zinc-300 font-mono text-xs sm:text-sm mt-3 leading-relaxed">
+                You gave everything on the pitch today, manager! Your 10 daily lives are completely depleted. 
+              </p>
+
+              {/* Ticking Countdown Timer */}
+              <div className="bg-zinc-950 border-2 border-zinc-800 rounded-xl p-4 my-5 flex flex-col items-center justify-center gap-1">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                  LIVES RECHARGE IN
+                </span>
+                <span className="font-mono text-3xl font-extrabold tracking-widest text-brand-gold">
+                  {countdown.hours}:{countdown.minutes}:{countdown.seconds}
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500 mt-1">
+                  RESETTING AT 00:00 MIDNIGHT EVERYDAY
+                </span>
+              </div>
+
+              <p className="text-zinc-400 text-[11px] sm:text-xs italic leading-tight">
+                Come back tomorrow to refresh your lives, claim your revenge, and smash your highscore! 🏆
+              </p>
+
+              {/* Action button to direct them to the Betting Arena */}
+              <div className="flex flex-col gap-2 mt-6">
+                <button
+                  onClick={() => {
+                    setShowLivesModal(false);
+                    setActiveCategory('betting');
+                  }}
+                  className="w-full bg-brand-gold text-brand-black font-anton text-lg uppercase py-3 border-2 border-brand-white shadow-[3px_3px_0px_0px_#f4f1ea] hover:shadow-[1px_1px_0px_0px_#f4f1ea] active:translate-y-0.5 transition-all cursor-pointer"
+                >
+                  🔮 VIEW DAILY PARLAYS & ODDS
+                </button>
+                <button
+                  onClick={() => setShowLivesModal(false)}
+                  className="w-full bg-zinc-800 text-zinc-400 hover:text-brand-white font-mono text-xs py-2 rounded-lg hover:bg-zinc-700 transition-colors"
+                >
+                  DISMISS
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

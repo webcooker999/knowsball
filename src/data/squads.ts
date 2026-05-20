@@ -1,6 +1,9 @@
 import { MORE_SQUADS } from './moreSquads';
 import { REAL_SQUADS } from './realSquads';
 import { EVEN_MORE_SQUADS } from './evenMoreSquads';
+import { CLUB_SQUADS } from './clubSquads';
+
+export { CLUB_SQUADS };
 
 export interface Player {
   id: string;
